@@ -29,6 +29,10 @@
         }
         $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
         addApiKeyAuthorization();
+        addOrganizationId();
+
+        // From https://github.com/swagger-api/swagger-ui/pull/2015
+        multilinable('input.parameter', 'body-textarea');
       },
       onFailure: function(data) {
         if('console' in window) {
@@ -41,6 +45,35 @@
       apisSorter: "alpha",
       jsonEditor: options.json_editor
     });
+
+    function multilinable(q, cls) {
+      $(q).keypress(function (e) {
+        if (e.ctrlKey && e.keyCode == 13) {
+          var $el = $(e.target);
+          var $ta = $(document.createElement('textarea'));
+          var attributes = $el.prop("attributes");
+          $.each(attributes, function() {
+            $ta.attr(this.name, this.value);
+          });
+          var v = $el.val();
+          if (v) v = v + '\n';
+          $ta.val(v);
+          $ta.addClass(cls);
+          $el.replaceWith($ta);
+          $ta.focus();
+          return false;
+        }
+      });
+    }
+
+    function addOrganizationId() {
+      var val = $('#input_organizationId')[0].value;
+      if (val !== undefined) {
+        $.each($('input[name="organization_id"]'), function () {
+          this.value = val;
+        });
+      }
+    }
 
     function addApiKeyAuthorization() {
       var key = $('#input_apiKey')[0].value;
@@ -56,6 +89,7 @@
   }
 
     $('#input_apiKey').change(addApiKeyAuthorization);
+    $('#input_organizationId').change(addOrganizationId);
 
     window.swaggerUi.load();
 
@@ -83,6 +117,7 @@
 
     <form id='api_selector'>
       <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
+      <div class='input'><input placeholder="organization_id" id="input_organizationId" name="organizationId" type="text" value=""/></div>
       <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text" value="<%= GrapeSwaggerRails.options.api_key_default_value %>"/></div>
       <div class='input'><a id="explore" class="exploreBtn" href="#">Explore</a></div>
     </form>
